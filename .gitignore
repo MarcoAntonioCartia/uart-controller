@@ -1,0 +1,31 @@
+﻿# Vivado generated project files
+*.xpr
+*.jou
+*.log
+*.str
+*.pb
+
+# Vivado project directories
+.Xil/
+vivado/*.cache/
+vivado/*.hw/
+vivado/*.ip_user_files/
+vivado/*.runs/
+vivado/*.sim/
+vivado/*.srcs/
+vivado/*.gen/
+vivado/*.bd/
+
+# Bitfiles (large, regeneratable)
+*.bit
+*.bin
+*.mcs
+
+# Simulation outputs
+*.vcd
+*.fst
+sim/
+
+# OS
+.DS_Store
+Thumbs.db
