@@ -2,7 +2,7 @@
 
 Serial communication from scratch — UART TX/RX on an Arty A7-100T.
 
-This is project 1.1 of an ongoing FPGA learning series. The goal is a clean,
+This is project 1.1 from the FPGA series. The goal is a clean,
 well-documented UART implementation that verifies the full Vivado workflow:
 synthesis, implementation, timing analysis, and hardware-in-the-loop testing.
 
