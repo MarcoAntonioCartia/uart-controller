@@ -51,7 +51,7 @@ module uart_tx (
     //
     // Vivado's synthesizer will detect this as an FSM and re-encode the states
     // to one-hot, which is optimal for Xilinx 7-series LUT6 architecture.
-    // You can verify this in the synthesis log ("FSM Encoding" section).
+    // we can verify this in the synthesis log ("FSM Encoding" section).
     // -------------------------------------------------------------------------
     localparam S_IDLE  = 2'd0;  // Waiting for tx_start
     localparam S_START = 2'd1;  // Driving start bit (low) for one baud period

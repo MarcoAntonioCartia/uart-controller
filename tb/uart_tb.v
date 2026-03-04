@@ -104,7 +104,7 @@ module uart_tb;
     // Open the resulting file with GTKWave:
     //   gtkwave uart_tb.vcd
     //
-    // This is your software oscilloscope — you can zoom into any bit period
+    // This is our software oscilloscope — we can zoom into any bit period
     // and see exactly what tx, rx, the state machines, and counters are doing.
     // -------------------------------------------------------------------------
     initial begin
@@ -160,7 +160,7 @@ module uart_tb;
     // waits.  This makes them perfect for testbench operations that span
     // multiple clock cycles.
     //
-    // Without tasks, you would copy-paste the same send/wait/check sequence
+    // Without tasks, we would copy-paste the same send/wait/check sequence
     // for every test — tedious and error-prone.
     // =========================================================================
 
@@ -332,7 +332,7 @@ module uart_tb;
         // 0x55 = 01010101 and 0xAA = 10101010.  These produce the maximum
         // number of transitions on the wire — the signal toggles every bit
         // period.  This is the hardest pattern for timing-sensitive designs.
-        // If the sampling point drifts even slightly, you get the wrong bit.
+        // If the sampling point drifts even slightly, we get the wrong bit.
         // =================================================================
         $display("");
         $display("--- Test 3: Alternating bits (0x55) ---");

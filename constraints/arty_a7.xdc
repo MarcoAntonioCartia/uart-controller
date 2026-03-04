@@ -21,7 +21,7 @@
 ## Pin E3 connects to the on-board 100 MHz crystal oscillator.
 ## The create_clock constraint tells Vivado's timing analyzer the clock
 ## frequency.  Without it, Vivado skips all setup/hold timing checks and
-## you could get mysterious hardware failures.
+## we could get mysterious hardware failures.
 ##
 ## Period = 10.00 ns = 100 MHz.  Waveform {0 5} means: rise at 0 ns, fall
 ## at 5 ns (50% duty cycle).
