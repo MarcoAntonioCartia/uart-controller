@@ -165,19 +165,39 @@ module uart_tb;
     // =========================================================================
 
     // -------------------------------------------------------------------------
-    // send_byte: Drive tx_data and pulse tx_start for exactly one clock cycle.
+    // send_byte: Wait for TX to be idle, then pulse tx_start for one cycle.
     //
-    // After this task completes, the TX module has latched the data and begun
-    // transmitting.  tx_start is back low.
+    // WHY WAIT FOR !tx_busy?
+    //   RX and TX use different counters (tick_sample vs tick_baud), so they
+    //   finish at different times.  RX can fire rx_done up to ~500 clocks
+    //   BEFORE TX returns to IDLE.  If we pulse tx_start while TX is still
+    //   in its STOP state, TX ignores it (it only checks tx_start in IDLE).
+    //   The byte is silently lost.
+    //
+    //   This mirrors real firmware practice: always check the busy flag
+    //   before writing a new byte to the UART.
+    //
+    // THE #1 DELAY:
+    //   At a posedge clk, both the DUT's always block and this initial block
+    //   wake up.  Verilog does NOT guarantee which runs first.  The #1 (1 ns)
+    //   delay advances past the DUT's non-blocking assignment (NBA) update
+    //   region, so we always read/write the correct values.
+    //
+    //   This is a simulation-only concern.  Real hardware has no race —
+    //   flip-flops sample inputs at the clock edge deterministically.
     // -------------------------------------------------------------------------
     task send_byte;
         input [7:0] data;
         begin
-            @(posedge clk);         // Synchronize to clock edge
+            // Wait until TX is idle — safe to send
+            while (tx_busy) begin
+                @(posedge clk); #1;
+            end
+            @(posedge clk); #1;     // Sync to edge, then wait past NBA region
             tx_data  = data;
             tx_start = 1'b1;
-            @(posedge clk);         // TX latches data on this edge
-            tx_start = 1'b0;        // De-assert after one cycle
+            @(posedge clk); #1;     // DUT latches data on this edge
+            tx_start = 1'b0;        // Safe to de-assert — DUT already saw it
         end
     endtask
 
@@ -187,13 +207,17 @@ module uart_tb;
     // If RX never responds (bug in the design), the timeout prevents the
     // simulation from hanging forever.  The timeout counter is generous —
     // 200,000 clocks is ~23x longer than one frame should take.
+    //
+    // The #1 delay after @(posedge clk) ensures we read rx_done AFTER the
+    // DUT's non-blocking assignments have updated it.  Without this, we
+    // might check the OLD value of rx_done and miss a single-cycle pulse.
     // -------------------------------------------------------------------------
     task wait_rx_done;
         integer countdown;
         begin
             countdown = TIMEOUT;
             while (!rx_done && countdown > 0) begin
-                @(posedge clk);
+                @(posedge clk); #1;
                 countdown = countdown - 1;
             end
             if (countdown == 0) begin
@@ -345,7 +369,9 @@ module uart_tb;
         check_rx(8'h12);
 
         // Wait for TX to finish (tx_busy goes low), then send immediately
-        while (tx_busy) @(posedge clk);
+        while (tx_busy) begin
+            @(posedge clk); #1;
+        end
         send_byte(8'h34);
         wait_rx_done;
         check_rx(8'h34);
@@ -371,10 +397,10 @@ module uart_tb;
         repeat (50) @(posedge clk);
 
         // Try to interfere: assert tx_start with different data
-        @(posedge clk);
+        @(posedge clk); #1;
         tx_data  = 8'hEF;          // Different byte
         tx_start = 1'b1;
-        @(posedge clk);
+        @(posedge clk); #1;
         tx_start = 1'b0;
 
         // Wait for the original byte to be received
